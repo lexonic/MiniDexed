@@ -37,7 +37,10 @@ CUserInterface::CUserInterface (CMiniDexed *pMiniDexed, CGPIOManager *pGPIOManag
 	m_pUIButtons (0),
 	m_pRotaryEncoder (0),
 	m_bSwitchPressed (false),
-	m_Menu (this, pMiniDexed)
+	//m_bMenuActive (true),   // classic mode: we start with Menu
+	m_bMenuActive (false),  // new mode: we start in MainScreen
+	m_Menu (this, pMiniDexed),
+	m_Main (this, pMiniDexed)
 {
 }
 
@@ -154,7 +157,8 @@ bool CUserInterface::Initialize (void)
 		LOGDBG ("Rotary encoder initialized");
 	}
 
-	m_Menu.EventHandler (CUIMenu::MenuEventUpdate);
+	//m_Menu.EventHandler (CUIMenu::MenuEventUpdate);
+	m_Main.EventHandler (CUIMain::MainEventUpdate);
 
 	return true;
 }
@@ -173,11 +177,16 @@ void CUserInterface::Process (void)
 
 void CUserInterface::ParameterChanged (void)
 {
-	m_Menu.EventHandler (CUIMenu::MenuEventUpdate);
+    if (m_bMenuActive) {
+    	m_Menu.EventHandler (CUIMenu::MenuEventUpdate);
+    } 
+    else {
+	    m_Main.EventHandler (CUIMain::MainEventUpdate);
+    }
 }
 
-void CUserInterface::DisplayWrite (const char *pMenu, const char *pParam, const char *pValue,
-				   bool bArrowDown, bool bArrowUp)
+void CUserInterface::DisplayWriteMenu (const char *pMenu, const char *pParam, const char *pValue,
+			bool bArrowDown, bool bArrowUp)
 {
 	assert (pMenu);
 	assert (pParam);
@@ -231,6 +240,44 @@ void CUserInterface::DisplayWrite (const char *pMenu, const char *pParam, const 
 	LCDWrite (Msg);
 }
 
+void CUserInterface::DisplayWriteMain (const char *pLine1Left, const char *pLine1Right, 
+		const char *pLine2Left, const char *pLine2Right)
+{
+	assert (pLine1Left);
+	assert (pLine2Left);
+
+	CString Msg ("\x1B[H\E[?25l");		// cursor home and off
+
+	// first line
+	Msg.Append (pLine1Left);
+
+	size_t nLen = strlen (pLine1Left) + strlen (pLine1Right);
+	if (nLen < m_pConfig->GetLCDColumns ())
+	{
+		for (unsigned i = m_pConfig->GetLCDColumns ()-nLen; i > 0; i--)
+		{
+			Msg.Append (" ");
+		}
+	}
+
+	Msg.Append (pLine1Right);
+
+	// second line
+	Msg.Append (pLine2Left);
+
+	nLen = strlen (pLine2Left) + strlen (pLine2Right);
+	if (nLen < m_pConfig->GetLCDColumns ())
+	{
+		for (unsigned i = m_pConfig->GetLCDColumns ()-nLen; i > 0; i--)
+		{
+			Msg.Append (" ");
+		}
+	}
+	Msg.Append (pLine2Right);
+
+	LCDWrite (Msg);
+}
+
 void CUserInterface::LCDWrite (const char *pString)
 {
 	if (m_pLCDBuffered)
@@ -256,21 +303,34 @@ void CUserInterface::EncoderEventHandler (CKY040::TEvent Event)
 			// We must reset the encoder switch button to prevent events from being
 			// triggered after the encoder is rotated
 			m_pUIButtons->ResetButton(m_pConfig->GetButtonPinShortcut());
-			m_Menu.EventHandler(CUIMenu::MenuEventPressAndStepUp);
-
+            if (m_bMenuActive) {
+    			m_Menu.EventHandler(CUIMenu::MenuEventPressAndStepUp);
+            } else {    // main screen
+			    m_Main.EventHandler(CUIMain::MainEventPressAndStepUp);
+            }
 		}
-		else {
+		else if (m_bMenuActive) {
 			m_Menu.EventHandler(CUIMenu::MenuEventStepUp);
+		}
+		else {  // main screen
+			m_Main.EventHandler(CUIMain::MainEventStepUp);
 		}
 		break;
 
 	case CKY040::EventCounterclockwise:
 		if (m_bSwitchPressed) {
 			m_pUIButtons->ResetButton(m_pConfig->GetButtonPinShortcut());
-			m_Menu.EventHandler(CUIMenu::MenuEventPressAndStepDown);
+            if (m_bMenuActive) {
+			    m_Menu.EventHandler(CUIMenu::MenuEventPressAndStepDown);
+            } else {    // main screen
+			    m_Main.EventHandler(CUIMain::MainEventPressAndStepDown);
+            }
 		}
-		else {
+		else if (m_bMenuActive) {
 			m_Menu.EventHandler(CUIMenu::MenuEventStepDown);
+		}
+		else {  // main screen
+			m_Main.EventHandler(CUIMain::MainEventStepDown);
 		}
 		break;
 
@@ -298,30 +358,64 @@ void CUserInterface::EncoderEventStub (CKY040::TEvent Event, void *pParam)
 
 void CUserInterface::UIButtonsEventHandler (CUIButton::BtnEvent Event)
 {
-	switch (Event)
+	if (m_bMenuActive)
 	{
-	case CUIButton::BtnEventPrev:
-		m_Menu.EventHandler (CUIMenu::MenuEventStepDown);
-		break;
+		switch (Event)
+		{
+		case CUIButton::BtnEventPrev:
+			m_Menu.EventHandler (CUIMenu::MenuEventStepDown);
+			break;
 
-	case CUIButton::BtnEventNext:
-		m_Menu.EventHandler (CUIMenu::MenuEventStepUp);
-		break;
+		case CUIButton::BtnEventNext:
+			m_Menu.EventHandler (CUIMenu::MenuEventStepUp);
+			break;
 
-	case CUIButton::BtnEventBack:
-		m_Menu.EventHandler (CUIMenu::MenuEventBack);
-		break;
+		case CUIButton::BtnEventBack:
+			m_Menu.EventHandler (CUIMenu::MenuEventBack);
+			break;
 
-	case CUIButton::BtnEventSelect:
-		m_Menu.EventHandler (CUIMenu::MenuEventSelect);
-		break;
+		case CUIButton::BtnEventSelect:
+			m_Menu.EventHandler (CUIMenu::MenuEventSelect);
+			break;
 
-	case CUIButton::BtnEventHome:
-		m_Menu.EventHandler (CUIMenu::MenuEventHome);
-		break;
+		case CUIButton::BtnEventHome:
+			m_bMenuActive = false;
+			m_Main.EventHandler (CUIMain::MainEventUpdate);     // enter main menu where we have left
 
-	default:
-		break;
+			break;
+
+		default:
+			break;
+		}
+	}
+	else    // main screen
+	{
+		switch (Event)
+		{
+		case CUIButton::BtnEventPrev:
+			m_Main.EventHandler (CUIMain::MainEventStepDown);
+			break;
+
+		case CUIButton::BtnEventNext:
+			m_Main.EventHandler (CUIMain::MainEventStepUp);
+			break;
+
+		case CUIButton::BtnEventBack:
+			m_Main.EventHandler (CUIMain::MainEventNextScreen);
+			break;
+
+		case CUIButton::BtnEventSelect:
+			m_Main.EventHandler (CUIMain::MainEventSelect);
+			break;
+
+		case CUIButton::BtnEventHome:
+			m_bMenuActive = true;
+			m_Menu.EventHandler (CUIMenu::MenuEventHome);
+			break;
+
+		default:
+			break;
+		}
 	}
 }
 

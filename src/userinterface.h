@@ -21,6 +21,7 @@
 #define _userinterface_h
 
 #include "config.h"
+#include "uimain.h"
 #include "uimenu.h"
 #include "uibuttons.h"
 #include <sensor/ky040.h>
@@ -46,11 +47,19 @@ public:
 
 	// Write to display in this format:
 	// +----------------+
+	// |UpLeft   UpRight|
+	// |LowLeft LowRight|
+	// +----------------+
+	void DisplayWriteMain (const char *pUpperLeft, const char *pUpperRight, 
+	        const char *pLowerLeft, const char *pLowerRight); 
+
+	// Write to display in this format:
+	// +----------------+
 	// |PARAM       MENU|
 	// |[<]VALUE     [>]|
 	// +----------------+
-	void DisplayWrite (const char *pMenu, const char *pParam, const char *pValue,
-			   bool bArrowDown, bool bArrowUp);
+	void DisplayWriteMenu (const char *pMenu, const char *pParam, const char *pValue,
+			bool bArrowDown, bool bArrowUp);
 
 	// To be called from the MIDI device on reception of a MIDI CC message
 	void UIMIDICmdHandler (unsigned nMidiCh, unsigned nMidiCmd, unsigned nMidiData1, unsigned nMidiData2);
@@ -82,7 +91,10 @@ private:
 	CKY040 *m_pRotaryEncoder;
 	bool m_bSwitchPressed;
 
+	bool m_bMenuActive;  // if menu is not active, we are in the main-screen
+
 	CUIMenu m_Menu;
+	CUIMain m_Main;
 };
 
 #endif

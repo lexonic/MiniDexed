@@ -58,20 +58,21 @@ private:
 
 	struct TMenuItem
 	{
-		const char *Name;
-		TMenuHandler *Handler;
-		const TMenuItem *MenuItem;
-		unsigned Parameter;
+		const char *Name;			// display name of this menu
+		TMenuHandler *Handler;		// hander of this menu
+		const TMenuItem *MenuItem;	// submenu
+		unsigned Parameter;			// parameter used by hander
 	};
 
 	typedef std::string TToString (int nValue);
 
 	struct TParameter
 	{
-		int Minimum;
-		int Maximum;
-		int Increment;
-		TToString *ToString;
+		int Minimum;				// min value of parameter
+		int Maximum;				// max value of parameter
+		int Increment;				// increment/decrement step
+		TToString *ToString;		// function to create a string representing
+									//   the parameter value for displaying
 	};
 
 private:
@@ -108,6 +109,8 @@ private:
 	static std::string ToPortaMode (int nValue);  
 	static std::string ToPortaGlissando (int nValue);   
 	static std::string ToPolyMono (int nValue);
+	static std::string ToGroup (int nValue);
+
 
 	void TGShortcutHandler (TMenuEvent Event);
 	void OPShortcutHandler (TMenuEvent Event);
@@ -155,6 +158,7 @@ private:
 	static const TParameter s_OPParameter[];
 
 	static const char s_NoteName[100][4];
+	static const char s_GroupText[6];
 
 	std::string m_InputText="1234567890ABCD";
 	unsigned m_InputTextPosition=0;
