@@ -87,6 +87,8 @@ public:
 	void setAftertouch (uint8_t value, unsigned nTG);
 
 	void SetReverbSend (unsigned nReverbSend, unsigned nTG);			// 0 .. 127
+	void SetTGGrouping (unsigned nTGGrouping, unsigned nTG);
+	void SetTGEnable (uint8_t nTGEnable, unsigned nTG);
 
 	void setMonoMode(uint8_t mono, uint8_t nTG);
 	void setPitchbendRange(uint8_t range, uint8_t nTG);
@@ -183,6 +185,9 @@ public:
 		TGParameterATPitch,
 		TGParameterATAmplitude,
 		TGParameterATEGBias,
+
+		TGParameterTGGrouping,
+		TGParameterTGEnable,
 		
 		TGParameterUnknown
 	};
@@ -201,10 +206,12 @@ public:
 	bool DoSavePerformance (void);
 
 	void setMasterVolume (float32_t vol);
+	float32_t getMasterVolume (void);
 
 private:
 	int16_t ApplyNoteLimits (int16_t pitch, unsigned nTG);	// returns < 0 to ignore note
 	uint8_t m_uchOPMask[CConfig::ToneGenerators];
+	bool m_bTGEnable[CConfig::ToneGenerators];
 	void LoadPerformanceParameters(void); 
 	void ProcessSound (void);
 
@@ -255,6 +262,7 @@ private:
 	int m_nNoteShift[CConfig::ToneGenerators];
 
 	unsigned m_nReverbSend[CConfig::ToneGenerators];
+	unsigned m_nTGGrouping[CConfig::ToneGenerators];
   
 	uint8_t m_nRawVoiceData[156]; 
 	

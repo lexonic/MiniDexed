@@ -88,8 +88,10 @@ CMiniDexed::CMiniDexed (CConfig *pConfig, CInterruptSystem *pInterrupt,
 		m_nAftertouchTarget[i]=0;
 		
 		m_nReverbSend[i] = 0;
+		m_nTGGrouping[i] = 0;
 		m_uchOPMask[i] = 0b111111;	// All operators on
-
+		m_bTGEnable[i] = true;
+		
 		m_pTG[i] = new CDexedAdapter (CConfig::MaxNotes, pConfig->GetSampleRate ());
 		assert (m_pTG[i]);
 
@@ -138,7 +140,16 @@ CMiniDexed::CMiniDexed (CConfig *pConfig, CInterruptSystem *pInterrupt,
 	}
 #endif
 
-	setMasterVolume(1.0);
+	// load MasterVolume from Config
+	//setMasterVolume(1.0);   // original setting
+	float32_t nConfigMasterVolume = pConfig->GetMasterVolume ();
+	setMasterVolume(nConfigMasterVolume/100);
+
+	// LOGNOTE: MasterVolume                       // DEBUG
+	std::string LogMasterVol = "MasterVolume (%): ";
+	LogMasterVol += std::to_string(nConfigMasterVolume);
+	LOGNOTE (LogMasterVol.c_str());
+
 
 	// BEGIN setup tg_mixer
 	tg_mixer = new AudioStereoMixer<CConfig::ToneGenerators>(pConfig->GetChunkSize()/2);
@@ -480,7 +491,37 @@ void CMiniDexed::SetResonance (int nResonance, unsigned nTG)
 	m_UI.ParameterChanged ();
 }
 
+void CMiniDexed::SetTGGrouping (unsigned nTGGrouping, unsigned nTG)
+{
+	nTGGrouping = constrain ((int)nTGGrouping, 0, 4);
 
+	assert (nTG < CConfig::ToneGenerators);
+	m_nTGGrouping[nTG] = nTGGrouping;
+
+	// TODO: anything else to do here?
+
+	m_UI.ParameterChanged ();
+}
+
+void CMiniDexed::SetTGEnable (uint8_t nTGEnable, unsigned nTG)
+{
+	//nTGEnable = constrain ((int)nTGEnable, 0, 1);
+
+	assert (nTG < CConfig::ToneGenerators);
+	m_bTGEnable[nTG] = nTGEnable != 0;
+
+	assert (m_pTG[nTG]);
+	if (nTGEnable == 0)
+	{
+		m_pTG[nTG]->deactivate ();
+	}
+	else
+	{
+		m_pTG[nTG]->activate ();
+	}
+
+	m_UI.ParameterChanged ();
+}
 
 void CMiniDexed::SetMIDIChannel (uint8_t uchChannel, unsigned nTG)
 {
@@ -757,6 +798,8 @@ void CMiniDexed::SetTGParameter (TTGParameter Parameter, int nValue, unsigned nT
 		break;
 
 	case TGParameterReverbSend:	SetReverbSend (nValue, nTG);	break;
+	case TGParameterTGGrouping:	SetTGGrouping (nValue, nTG);	break;
+	case TGParameterTGEnable:	SetTGEnable (nValue, nTG);		break;
 
 	default:
 		assert (0);
@@ -806,6 +849,8 @@ int CMiniDexed::GetTGParameter (TTGParameter Parameter, unsigned nTG)
 	case TGParameterATAmplitude:				return getModController(3, 2,  nTG); 
 	case TGParameterATEGBias:					return getModController(3, 3,  nTG); 
 	
+	case TGParameterTGGrouping:					return m_nTGGrouping[nTG];
+	case TGParameterTGEnable:					return m_bTGEnable[nTG] ? 1 : 0;
 	
 	default:
 		assert (0);
@@ -1093,6 +1138,7 @@ bool CMiniDexed::DoSavePerformance (void)
 		m_PerformanceConfig.SetAftertouchTarget (m_nAftertouchTarget[nTG], nTG);
 		
 		m_PerformanceConfig.SetReverbSend (m_nReverbSend[nTG], nTG);
+		m_PerformanceConfig.SetTGGrouping (m_nTGGrouping[nTG], nTG);
 	}
 
 	m_PerformanceConfig.SetCompressorEnable (!!m_nParameter[ParameterCompressorEnable]);
@@ -1357,6 +1403,11 @@ void CMiniDexed::setMasterVolume (float32_t vol)
 	nMasterVolume=vol;
 }
 
+float32_t CMiniDexed::getMasterVolume(void)
+{
+    return nMasterVolume;
+}
+
 std::string CMiniDexed::GetPerformanceFileName(unsigned nID)
 {
 	return m_PerformanceConfig.GetPerformanceFileName(nID);
@@ -1470,6 +1521,7 @@ void CMiniDexed::LoadPerformanceParameters(void)
 			}
 			setMonoMode(m_PerformanceConfig.GetMonoMode(nTG) ? 1 : 0, nTG); 
 			SetReverbSend (m_PerformanceConfig.GetReverbSend (nTG), nTG);
+			SetTGGrouping (m_PerformanceConfig.GetTGGrouping (nTG), nTG);
 					
 			setModWheelRange (m_PerformanceConfig.GetModulationWheelRange (nTG),  nTG);
 			setModWheelTarget (m_PerformanceConfig.GetModulationWheelTarget (nTG),  nTG);
@@ -1480,6 +1532,7 @@ void CMiniDexed::LoadPerformanceParameters(void)
 			setAftertouchRange (m_PerformanceConfig.GetAftertouchRange (nTG),  nTG);
 			setAftertouchTarget (m_PerformanceConfig.GetAftertouchTarget (nTG),  nTG);
 			
+			//SetTGEnable (1, nTG);	// always enable all TG's on Performance load  // TODO: activate after testing
 		
 		}
 
