@@ -147,6 +147,9 @@ bool CPerformanceConfig::Load (void)
 		PropertyName.Format ("AftertouchTarget%u", nTG+1);
 		m_nAftertouchTarget[nTG] = m_Properties.GetNumber (PropertyName, 0);
 		
+		PropertyName.Format ("TGGrouping%u", nTG+1);
+		m_nTGGrouping[nTG] = m_Properties.GetNumber (PropertyName, 0);
+		
 		}
 
 	m_bCompressorEnable = m_Properties.GetNumber ("CompressorEnable", 1) != 0;
@@ -264,6 +267,9 @@ bool CPerformanceConfig::Save (void)
 		
 		PropertyName.Format ("AftertouchTarget%u", nTG+1);
 		m_Properties.SetNumber (PropertyName, m_nAftertouchTarget[nTG]);			
+
+		PropertyName.Format ("TGGrouping%u", nTG+1);
+		m_Properties.SetNumber (PropertyName, m_nTGGrouping[nTG]);			
 
 		}
 
@@ -673,6 +679,18 @@ unsigned CPerformanceConfig::GetAftertouchTarget (unsigned nTG) const
 {
 	assert (nTG < CConfig::ToneGenerators);
 	return m_nAftertouchTarget[nTG];
+}
+
+void CPerformanceConfig::SetTGGrouping (unsigned nValue, unsigned nTG)
+{
+	assert (nTG < CConfig::ToneGenerators);
+	m_nTGGrouping[nTG] = nValue;
+}
+
+unsigned CPerformanceConfig::GetTGGrouping (unsigned nTG) const
+{
+	assert (nTG < CConfig::ToneGenerators);
+	return m_nTGGrouping[nTG];
 }
 
 void CPerformanceConfig::SetVoiceDataToTxt (const uint8_t *pData, unsigned nTG)  

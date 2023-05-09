@@ -67,6 +67,7 @@ public:
 	unsigned GetBreathControlTarget (unsigned nTG) const;  // 0 .. 7
 	unsigned GetAftertouchRange (unsigned nTG) const; // 0 .. 99
 	unsigned GetAftertouchTarget (unsigned nTG) const;  // 0 .. 7
+	unsigned GetTGGrouping (unsigned nTG) const;  // 0 .. 4
 
 	void SetBankNumber (unsigned nValue, unsigned nTG);
 	void SetVoiceNumber (unsigned nValue, unsigned nTG);
@@ -97,6 +98,7 @@ public:
 	void SetBreathControlTarget (unsigned nValue, unsigned nTG);
 	void SetAftertouchRange (unsigned nValue, unsigned nTG);
 	void SetAftertouchTarget (unsigned nValue, unsigned nTG);
+	void SetTGGrouping (unsigned nValue, unsigned nTG);
 
 	// Effects
 	bool GetCompressorEnable (void) const;
@@ -163,6 +165,8 @@ private:
 	unsigned m_nBreathControlTarget[CConfig::ToneGenerators];	
 	unsigned m_nAftertouchRange[CConfig::ToneGenerators];	
 	unsigned m_nAftertouchTarget[CConfig::ToneGenerators];	
+
+	unsigned m_nTGGrouping[CConfig::ToneGenerators];
 
 	unsigned nLastPerformance;  
 	unsigned nLastFileIndex;
