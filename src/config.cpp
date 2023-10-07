@@ -21,6 +21,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 #include "config.h"
+#include "../Synth_Dexed/src/dexed.h"
 
 CConfig::CConfig (FATFS *pFileSystem)
 :	m_Properties ("minidexed.ini", pFileSystem)
@@ -45,6 +46,15 @@ void CConfig::Load (void)
 #endif
 	m_nDACI2CAddress = m_Properties.GetNumber ("DACI2CAddress", 0);
 	m_bChannelsSwapped = m_Properties.GetNumber ("ChannelsSwapped", 0) != 0;
+
+		unsigned newEngineType = m_Properties.GetNumber ("EngineType", 1);
+	if (newEngineType == 2) {
+  		m_EngineType = MKI;
+	} else if (newEngineType == 3) {
+  		m_EngineType = OPL;
+	} else {
+  		m_EngineType = MSFA;
+	}
 
 	m_nMIDIBaudRate = m_Properties.GetNumber ("MIDIBaudRate", 31250);
 
@@ -71,6 +81,8 @@ void CConfig::Load (void)
 	m_bMIDIRXProgramChange = m_Properties.GetNumber ("MIDIRXProgramChange", 1) != 0;
 	m_bIgnoreAllNotesOff = m_Properties.GetNumber ("IgnoreAllNotesOff", 0) != 0;
 	m_bMIDIAutoVoiceDumpOnPC = m_Properties.GetNumber ("MIDIAutoVoiceDumpOnPC", 1) != 0;
+	m_bHeaderlessSysExVoices = m_Properties.GetNumber ("HeaderlessSysExVoices", 0) != 0;
+	m_bExpandPCAcrossBanks = m_Properties.GetNumber ("ExpandPCAcrossBanks", 1) != 0;
 
 	m_bLCDEnabled = m_Properties.GetNumber ("LCDEnabled", 0) != 0;
 	m_nLCDPinEnable = m_Properties.GetNumber ("LCDPinEnable", 4);
@@ -107,6 +119,16 @@ void CConfig::Load (void)
 	m_nDoubleClickTimeout = m_Properties.GetNumber ("DoubleClickTimeout", 400);
 	m_nLongPressTimeout = m_Properties.GetNumber ("LongPressTimeout", 600);
 
+	m_nButtonPinPgmUp = m_Properties.GetNumber ("ButtonPinPgmUp", 0);
+	m_nButtonPinPgmDown = m_Properties.GetNumber ("ButtonPinPgmDown", 0);
+	m_nButtonPinTGUp = m_Properties.GetNumber ("ButtonPinTGUp", 0);
+	m_nButtonPinTGDown = m_Properties.GetNumber ("ButtonPinTGDown", 0);
+
+	m_ButtonActionPgmUp = m_Properties.GetString ("ButtonActionPgmUp", "");
+	m_ButtonActionPgmDown = m_Properties.GetString ("ButtonActionPgmDown", "");
+	m_ButtonActionTGUp = m_Properties.GetString ("ButtonActionTGUp", "");
+	m_ButtonActionTGDown = m_Properties.GetString ("ButtonActionTGDown", "");
+
 	m_nMIDIButtonCh = m_Properties.GetNumber ("MIDIButtonCh", 0);
 	m_nMIDIButtonNotes = m_Properties.GetNumber ("MIDIButtonNotes", 0);
 	m_nMIDIButtonPrev = m_Properties.GetNumber ("MIDIButtonPrev", 0);
@@ -115,6 +137,11 @@ void CConfig::Load (void)
 	m_nMIDIButtonSelect = m_Properties.GetNumber ("MIDIButtonSelect", 0);
 	m_nMIDIButtonHome = m_Properties.GetNumber ("MIDIButtonHome", 0);
 
+	m_nMIDIButtonPgmUp = m_Properties.GetNumber ("MIDIButtonPgmUp", 0);
+	m_nMIDIButtonPgmDown = m_Properties.GetNumber ("MIDIButtonPgmDown", 0);
+	m_nMIDIButtonTGUp = m_Properties.GetNumber ("MIDIButtonTGUp", 0);
+	m_nMIDIButtonTGDown = m_Properties.GetNumber ("MIDIButtonTGDown", 0);
+	
 	m_bEncoderEnabled = m_Properties.GetNumber ("EncoderEnabled", 0) != 0;
 	m_nEncoderPinClock = m_Properties.GetNumber ("EncoderPinClock", 10);
 	m_nEncoderPinData = m_Properties.GetNumber ("EncoderPinData", 9);
@@ -122,6 +149,7 @@ void CConfig::Load (void)
 	m_bMIDIDumpEnabled  = m_Properties.GetNumber ("MIDIDumpEnabled", 0) != 0;
 	m_bProfileEnabled = m_Properties.GetNumber ("ProfileEnabled", 0) != 0;
 	m_bPerformanceSelectToLoad = m_Properties.GetNumber ("PerformanceSelectToLoad", 1) != 0;
+	m_bPerformanceSelectChannel = m_Properties.GetNumber ("PerformanceSelectChannel", 0);
 
 	m_nMasterVolume = m_Properties.GetNumber ("MasterVolume", 100);
 }
@@ -149,6 +177,11 @@ unsigned CConfig::GetDACI2CAddress (void) const
 bool CConfig::GetChannelsSwapped (void) const
 {
 	return m_bChannelsSwapped;
+}
+
+unsigned CConfig::GetEngineType (void) const
+{
+	return m_EngineType;
 }
 
 unsigned CConfig::GetMIDIBaudRate (void) const
@@ -179,6 +212,16 @@ bool CConfig::GetIgnoreAllNotesOff (void) const
 bool CConfig::GetMIDIAutoVoiceDumpOnPC (void) const
 {
 	return m_bMIDIAutoVoiceDumpOnPC;
+}
+
+bool CConfig::GetHeaderlessSysExVoices (void) const
+{
+	return m_bHeaderlessSysExVoices;
+}
+
+bool CConfig::GetExpandPCAcrossBanks (void) const
+{
+	return m_bExpandPCAcrossBanks;
 }
 
 bool CConfig::GetLCDEnabled (void) const
@@ -326,6 +369,46 @@ unsigned CConfig::GetLongPressTimeout (void) const
 	return m_nLongPressTimeout;
 }
 
+unsigned CConfig::GetButtonPinPgmUp (void) const
+{
+	return m_nButtonPinPgmUp;
+}
+
+unsigned CConfig::GetButtonPinPgmDown (void) const
+{
+	return m_nButtonPinPgmDown;
+}
+
+unsigned CConfig::GetButtonPinTGUp (void) const
+{
+	return m_nButtonPinTGUp;
+}
+
+unsigned CConfig::GetButtonPinTGDown (void) const
+{
+	return m_nButtonPinTGDown;
+}
+
+const char *CConfig::GetButtonActionPgmUp (void) const
+{
+	return m_ButtonActionPgmUp.c_str();
+}
+
+const char *CConfig::GetButtonActionPgmDown (void) const
+{
+	return m_ButtonActionPgmDown.c_str();
+}
+
+const char *CConfig::GetButtonActionTGUp (void) const
+{
+	return m_ButtonActionTGUp.c_str();
+}
+
+const char *CConfig::GetButtonActionTGDown (void) const
+{
+	return m_ButtonActionTGDown.c_str();
+}
+
 unsigned CConfig::GetMIDIButtonCh (void) const
 {
 	return m_nMIDIButtonCh;
@@ -361,6 +444,26 @@ unsigned CConfig::GetMIDIButtonHome (void) const
 	return m_nMIDIButtonHome;
 }
 
+unsigned CConfig::GetMIDIButtonPgmUp (void) const
+{
+	return m_nMIDIButtonPgmUp;
+}
+
+unsigned CConfig::GetMIDIButtonPgmDown (void) const
+{
+	return m_nMIDIButtonPgmDown;
+}
+
+unsigned CConfig::GetMIDIButtonTGUp (void) const
+{
+	return m_nMIDIButtonTGUp;
+}
+
+unsigned CConfig::GetMIDIButtonTGDown (void) const
+{
+	return m_nMIDIButtonTGDown;
+}
+
 bool CConfig::GetEncoderEnabled (void) const
 {
 	return m_bEncoderEnabled;
@@ -391,8 +494,12 @@ bool CConfig::GetPerformanceSelectToLoad (void) const
 	return m_bPerformanceSelectToLoad;
 }
 
+unsigned CConfig::GetPerformanceSelectChannel (void) const
+{
+	return m_bPerformanceSelectChannel;
+}
+
 unsigned CConfig::GetMasterVolume (void) const
 {
 	return m_nMasterVolume;
 }
-

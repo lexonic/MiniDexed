@@ -36,7 +36,7 @@ LOGMODULE ("mididevice");
 #define MIDI_AFTERTOUCH		0b1010			// TODO
 #define MIDI_CHANNEL_AFTERTOUCH 0b1101   // right now Synth_Dexed just manage Channel Aftertouch not Polyphonic AT -> 0b1010
 #define MIDI_CONTROL_CHANGE	0b1011
-	#define MIDI_CC_BANK_SELECT_MSB		0	// TODO
+	#define MIDI_CC_BANK_SELECT_MSB		0
 	#define MIDI_CC_MODULATION			1
 	#define MIDI_CC_BREATH_CONTROLLER	2 
 	#define MIDI_CC_FOOT_PEDAL 		4
@@ -164,7 +164,7 @@ void CMIDIDevice::MIDIMessageHandler (const u8 *pMessage, size_t nLength, unsign
 
 	if (nLength < 2)
 	{
-		//LOGERR("MIDI message is shorter than 2 bytes!");		// removed false errorlog for valid 1-byte MIDI real-time-messages
+		// LOGERR("MIDI message is shorter than 2 bytes!");
 		return;
 	}
 
@@ -191,9 +191,24 @@ void CMIDIDevice::MIDIMessageHandler (const u8 *pMessage, size_t nLength, unsign
 		case MIDI_NOTE_ON:
 			if (nLength < 3)
 			{
-				break;	
+				break;
 			}
 			m_pUI->UIMIDICmdHandler (ucChannel, ucStatus & 0xF0, pMessage[1], pMessage[2]);
+			break;
+		case MIDI_PROGRAM_CHANGE:
+			// Check for performance PC messages
+			if( m_pConfig->GetMIDIRXProgramChange() )
+			{
+				unsigned nPerfCh = m_pSynthesizer->GetPerformanceSelectChannel();
+				if( nPerfCh != Disabled)
+				{
+					if ((ucChannel == nPerfCh) || (nPerfCh == OmniMode))
+					{
+						//printf("Performance Select Channel %d\n", nPerfCh);
+						m_pSynthesizer->ProgramChangePerformance (pMessage[1]);
+					}
+				}
+			}
 			break;
 		}
 
@@ -283,6 +298,10 @@ void CMIDIDevice::MIDIMessageHandler (const u8 *pMessage, size_t nLength, unsign
 							m_pSynthesizer->SetPan (pMessage[2], nTG);
 							break;
 		
+						case MIDI_CC_BANK_SELECT_MSB:
+							m_pSynthesizer->BankSelectMSB (pMessage[2], nTG);
+							break;
+		
 						case MIDI_CC_BANK_SELECT_LSB:
 							m_pSynthesizer->BankSelectLSB (pMessage[2], nTG);
 							break;
@@ -320,7 +339,10 @@ void CMIDIDevice::MIDIMessageHandler (const u8 *pMessage, size_t nLength, unsign
 							break;
 		
 						case MIDI_CC_ALL_NOTES_OFF:
-							if (!m_pConfig->GetIgnoreAllNotesOff ())
+							// As per "MIDI 1.0 Detailed Specification" v4.2
+							// From "ALL NOTES OFF" states:
+							// "Receivers should ignore an All Notes Off message while Omni is on (Modes 1 & 2)"
+							if (!m_pConfig->GetIgnoreAllNotesOff () && m_ChannelMap[nTG] != OmniMode)
 							{
 								m_pSynthesizer->notesOff (pMessage[2], nTG);
 							}
@@ -329,9 +351,11 @@ void CMIDIDevice::MIDIMessageHandler (const u8 *pMessage, size_t nLength, unsign
 						break;
 		
 					case MIDI_PROGRAM_CHANGE:
-						// do program change only if enabled in config
-						if( m_pConfig->GetMIDIRXProgramChange() )
+						// do program change only if enabled in config and not in "Performance Select Channel" mode
+						if( m_pConfig->GetMIDIRXProgramChange() && ( m_pSynthesizer->GetPerformanceSelectChannel() == Disabled) ) {
+							//printf("Program Change to %d (%d)\n", ucChannel, m_pSynthesizer->GetPerformanceSelectChannel());
 							m_pSynthesizer->ProgramChange (pMessage[1], nTG);
+						}
 						break;
 		
 					case MIDI_PITCH_BEND: {
