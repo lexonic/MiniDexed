@@ -338,6 +338,8 @@ const char CUIMenu::s_NoteName[100][5] =
 "A7", "A#7", "B7", "C8"
 };
 
+const char CUIMenu::s_GroupText[6] = {".ABCD"};
+
 static const unsigned NoteC3 = 39;
 
 // Performance menu-items
@@ -569,7 +571,6 @@ void CUIMenu::EditGlobalParameter (CUIMenu *pUIMenu, TMenuEvent Event)
 void CUIMenu::EditVoiceBankNumber (CUIMenu *pUIMenu, TMenuEvent Event)
 {
 	unsigned nTG = pUIMenu->m_nMenuStackParameter[pUIMenu->m_nCurrentMenuDepth-1];
-	int nLoadedBanks = pUIMenu->m_pMiniDexed->GetSysExFileLoader ()->GetNumLoadedBanks();
 
 	int nValue = pUIMenu->m_pMiniDexed->GetTGParameter (CMiniDexed::TGParameterVoiceBank, nTG);
 
@@ -616,7 +617,6 @@ void CUIMenu::EditVoiceBankNumber (CUIMenu *pUIMenu, TMenuEvent Event)
 void CUIMenu::EditProgramNumber (CUIMenu *pUIMenu, TMenuEvent Event)
 {
 	unsigned nTG = pUIMenu->m_nMenuStackParameter[pUIMenu->m_nCurrentMenuDepth-1];
-	int nLoadedBanks = pUIMenu->m_pMiniDexed->GetSysExFileLoader ()->GetNumLoadedBanks();
 
 	int nValue = pUIMenu->m_pMiniDexed->GetTGParameter (CMiniDexed::TGParameterProgram, nTG);
 

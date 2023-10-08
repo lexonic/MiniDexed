@@ -139,24 +139,16 @@ void CUIMain::ChangeBank (CUIMain *pUIMain, TMainEvent Event)
 	unsigned nTG = pUIMain->m_nCurrentTG;
 	int nTGGroup = pUIMain->m_pMiniDexed->GetTGParameter(CMiniDexed::TGParameterTGGrouping, nTG);
 
-	int nLoadedBanks = pUIMain->m_pMiniDexed->GetSysExFileLoader()->GetNumLoadedBanks();
-
 	int nValue = pUIMain->m_pMiniDexed->GetTGParameter(CMiniDexed::TGParameterVoiceBank, nTG);
 
 	switch (Event)
 	{
 	case MainEventStepDown:
-		if (--nValue < 0)
-		{
-			nValue = 0;
-		}
+		nValue = pUIMain->m_pMiniDexed->GetSysExFileLoader ()->GetNextBankDown(nValue);
 		break;
 
 	case MainEventStepUp:
-		if (++nValue > (int) nLoadedBanks-1)
-		{
-			nValue = nLoadedBanks-1;
-		}
+		nValue = pUIMain->m_pMiniDexed->GetSysExFileLoader ()->GetNextBankUp(nValue);
 		break;
 
 	default:
@@ -191,8 +183,6 @@ void CUIMain::ChangeVoice (CUIMain *pUIMain, TMainEvent Event)
 	int nTGGroup = pUIMain->m_pMiniDexed->GetTGParameter(CMiniDexed::TGParameterTGGrouping, nTG);
 	int nVB = pUIMain->m_pMiniDexed->GetTGParameter(CMiniDexed::TGParameterVoiceBank, nTG);
 
-	int nLoadedBanks = pUIMain->m_pMiniDexed->GetSysExFileLoader()->GetNumLoadedBanks();
-
 	int nValue = pUIMain->m_pMiniDexed->GetTGParameter(CMiniDexed::TGParameterProgram, nTG);
 
 	bool bUpdateBank = false;
@@ -205,11 +195,7 @@ void CUIMain::ChangeVoice (CUIMain *pUIMain, TMainEvent Event)
 			// Switch down a voice bank and set to the last voice
 			bUpdateBank = true;
 			nValue = CSysExFileLoader::VoicesPerBank-1;
-			if (--nVB < 0)
-			{
-				// Wrap around to last loaded bank
-				nVB = nLoadedBanks-1;
-			}
+			nVB = pUIMain->m_pMiniDexed->GetSysExFileLoader ()->GetNextBankDown(nVB);
 		}
 		break;
 
@@ -219,11 +205,7 @@ void CUIMain::ChangeVoice (CUIMain *pUIMain, TMainEvent Event)
 			// Switch up a voice bank and reset to voice 0
 			bUpdateBank = true;
 			nValue = 0;
-			if (++nVB > (int) nLoadedBanks-1)
-			{
-				// Wrap around to first bank
-				nVB = 0;
-			}
+			nVB = pUIMain->m_pMiniDexed->GetSysExFileLoader ()->GetNextBankUp(nVB);
 		}
 		break;
 
