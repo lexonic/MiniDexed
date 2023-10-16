@@ -654,10 +654,13 @@ void CMiniDexed::keyup (int16_t pitch, unsigned nTG)
 	assert (nTG < CConfig::ToneGenerators);
 	assert (m_pTG[nTG]);
 
-	pitch = ApplyNoteLimits (pitch, nTG);
-	if (pitch >= 0)
+	if (m_bTGEnable[nTG])
 	{
-		m_pTG[nTG]->keyup (pitch);
+		pitch = ApplyNoteLimits (pitch, nTG);
+		if (pitch >= 0)
+		{
+			m_pTG[nTG]->keyup (pitch);
+		}
 	}
 }
 
@@ -666,10 +669,13 @@ void CMiniDexed::keydown (int16_t pitch, uint8_t velocity, unsigned nTG)
 	assert (nTG < CConfig::ToneGenerators);
 	assert (m_pTG[nTG]);
 
-	pitch = ApplyNoteLimits (pitch, nTG);
-	if (pitch >= 0)
+	if (m_bTGEnable[nTG])
 	{
-		m_pTG[nTG]->keydown (pitch, velocity);
+		pitch = ApplyNoteLimits (pitch, nTG);
+		if (pitch >= 0)
+		{
+			m_pTG[nTG]->keydown (pitch, velocity);
+		}
 	}
 }
 
@@ -1650,7 +1656,7 @@ void CMiniDexed::LoadPerformanceParameters(void)
 			setAftertouchRange (m_PerformanceConfig.GetAftertouchRange (nTG),  nTG);
 			setAftertouchTarget (m_PerformanceConfig.GetAftertouchTarget (nTG),  nTG);
 			
-			//SetTGEnable (1, nTG);	// always enable all TG's on Performance load  // TODO: activate after testing
+			SetTGEnable (1, nTG);	// always enable all TG's on Performance load
 		
 		}
 
