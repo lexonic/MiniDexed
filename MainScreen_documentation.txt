@@ -1,0 +1,144 @@
+MiniDexed new User-Interface Main-Screens
+=========================================
+
+
+
+UIMain - Concept
+----------------
+
+A new user-interface for play/perform operations. 
+
+A long-press steps through the main screens: BANK+VOICE / PERFORMANCE / TG-Grouping & Mute
+
+Double-clicking in any of the main screens will enter the well-known MiniDexed menu. Double-click to exit the menu.
+
+This new UI can be disabled in minidexed.ini:
+	UIMainEnabled=0
+
+With this setting, MiniDexed behaves exactly as we know it: A double-click deep inside the menu will bring us back to the menu's home, and not exiting the menu.
+
+The default screen presented after startup can be configured in minidexed.ini (this setting is only effective with UIMainEnabled=1): 
+	DefaultScreen=0  -> start with classic MiniDexed menu
+	DefaultScreen=1  -> start with Bank+Voice screen
+	DefaultScreen=2  -> start with Performance screen
+
+
+
+Screens:
+                        +------------+
+						|            |      | short       | encoder     | click+turn           |
+                        V            |      +-------------+-------------+----------------------+
+Bank+Voice      +----------------+   |      |             |             |                      |
+                |001[BankNameXY]8|   |      | SelectTG    | ChangeTG    | { MasterVolume       |
+                |  1 VoiceNameX ♪|   |      | SelectBank  | ChangeBank  | {                    |
+                +----------------+   |      | SelectVoice | ChangeVoice | {                    |
+                        | long       |      |             |             |                      |
+                        V            |      +-------------+-------------+----------------------+
+Performance     +----------------+   |      |             |             |                      |
+                |PERF 000-001 (L)|   |      | LoadPerf    | ChangePerf  | MasterVolume         |
+                |PerformancName ♪|   |      |             |             |                      |
+                +----------------+   |      |             |             |                      |
+                        | long       |      |             |             |                      |
+                        V            |      +-------------+-------------+----------------------+
+Groups+Mute     +----------------+   |      |             |             |                      |
+                |Group AABBC..C  |   |      | mute/unmute | SelectTGNum | EditGroup (none,A-D) |
+                |TG    12345678  |   |      |             |             |                      |
+                +----------------+   |      |             |             |                      |
+                        | long       |      +-------------+-------------+----------------------+
+                        |            |
+                        +------------+      double-click = enter menu
+
+
+
+MasterVolume    +----------------+      pop-up screen during manual MasterVolume change 
+                |Master Volume   |      (shall not pop-up during MIDI MasterVolume changes)
+                |[███████   ] 100|
+                +----------------+
+
+
+
+
+
+Bank + Voice Screen
+-------------------
+
+Banks and Voices can be selected for each TG.
+
+                           +----------------+
+Bank Number + Bank Name -> |128 BankNameXY 8| <- TG-number
+Voice Num. + Voice Name -> | 32 VoiceNameX ♪| <- MIDI activity (not yet implemented)
+                           +----------------+
+
+                           +----------------+
+                           |001[BankNameXY]8| <- [] = selected item can be changed with encoder
+                           |  1 VoiceNameX ♪|
+                           +----------------+
+
+disadvantage of this screen layout: bank numbers are limited to 3 digits (1..999).
+
+
+The selected Bank or Voice will show the name in squared brackets "[ ]". No squared brackets are visible when TG is selected. Select next item with an encoder-click. The selected item can be changed by turning the encoder.
+
+
+
+Performance Screen
+------------------
+
+Select and load a performance.
+
+                           +----------------+
+                           |PERF 0001    (L)| <- (L) for loaded as in classic menu
+                           |PerformanceName | <- Performance names (up to 16 characters possible)
+                           +----------------+
+
+Select performance with encoder and load it with encoder-click.
+
+
+
+TG Grouping and Mute
+--------------------
+
+Grouping TG's link TG's together. Grouped TGs sync changes of Voices and Banks in Bank+Voice Screen. Changes in the classic menu are not syncronized!
+
+Select the TG by turning the encoder. A click toggles mute/unmute. Click+turn changes the group.
+
+Load/save group settings in performance files for each TG:
+	TGGrouping#=0..4   -> 0 = ungrouped; 1..4 = A..D
+
+Muted TG's are a working tool and are not saved in the performance file. (Like disabled OP's in the DX7)
+
+                           +----------------+
+                           |Group ..BBC..C  | <- TGs without grouping show up as "."
+                           |TG    1-3--678  | <- muted TGs show up as "-"
+                           +----------------+
+
+Un-grouped TG's (default) shows as ".".
+
+Muted TG's show as "-" instead of the TG-number.
+
+behaviour of grouping for TG's in the same group:
+    * changing a bank will be reflected on all TG's with same group ID
+    * changing a voice will change to the same Voice and Bank on all TG's with same group ID.
+
+
+
+Master Volume Screen
+--------------------
+
+MasterVolume is adjusted by encoder click+turn.
+
+                           +----------------+
+                           |Master Volume   |
+                           |[███████   ] 100| <- MasterVolume is changed in steps of 5
+                           +----------------+
+
+MasterVolume-screen is not shown or updated by changing MasterVolume by MIDI.
+
+Load global MasterVolume from minidexed.ini (range: 0..100):
+    MasterVolume=100
+
+
+
+
+
+REMARK: the file "src/performance.ini.test" can be used for testing the grouping and muting features.
