@@ -152,6 +152,7 @@ void CConfig::Load (void)
 	m_bPerformanceSelectChannel = m_Properties.GetNumber ("PerformanceSelectChannel", 0);
 
 	m_nMasterVolume = m_Properties.GetNumber ("MasterVolume", 100);
+	m_nDefaultScreen = m_Properties.GetNumber ("DefaultScreen", 0);
 }
 
 const char *CConfig::GetSoundDevice (void) const
@@ -502,4 +503,8 @@ unsigned CConfig::GetPerformanceSelectChannel (void) const
 unsigned CConfig::GetMasterVolume (void) const
 {
 	return m_nMasterVolume;
+}
+unsigned CConfig::GetDefaultScreen (void) const
+{
+	return m_nDefaultScreen;
 }

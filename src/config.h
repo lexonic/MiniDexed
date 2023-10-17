@@ -164,7 +164,9 @@ public:
 	// Load performance mode. 0 for load just rotating encoder, 1 load just when Select is pushed
 	bool GetPerformanceSelectToLoad (void) const;
 	unsigned GetPerformanceSelectChannel (void) const;
+
 	unsigned GetMasterVolume (void) const;
+	unsigned GetDefaultScreen (void) const;
 
 private:
 	CPropertiesFatFsFile m_Properties;
@@ -250,6 +252,7 @@ private:
 	unsigned m_bPerformanceSelectChannel;
 
 	unsigned m_nMasterVolume;
+	unsigned m_nDefaultScreen;
 };
 
 #endif

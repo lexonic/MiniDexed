@@ -27,11 +27,11 @@
 #include "sysexfileloader.h"
 #include "config.h"
 #include <cmath>
-#include <circle/logger.h>		// DEBUG (temporary)
+//#include <circle/logger.h>		// DEBUG (temporary)
 #include <circle/sysconfig.h>
 #include <assert.h>
 
-LOGMODULE ("uimain");		// DEBUG (temporary)
+//LOGMODULE ("uimain");		// DEBUG (temporary)
 
 
 using namespace std;
@@ -133,7 +133,7 @@ void CUIMain::EventHandler (TMainEvent Event)
 }
 
 
-// ChangeBank
+// Change Bank
 void CUIMain::ChangeBank (CUIMain *pUIMain, TMainEvent Event)
 {
 	unsigned nTG = pUIMain->m_nCurrentTG;
@@ -176,7 +176,7 @@ void CUIMain::ChangeBank (CUIMain *pUIMain, TMainEvent Event)
 }
 
 
-// ChangeVoice
+// Change Voice
 void CUIMain::ChangeVoice (CUIMain *pUIMain, TMainEvent Event)
 {
 	unsigned nTG = pUIMain->m_nCurrentTG;
@@ -225,16 +225,12 @@ void CUIMain::ChangeVoice (CUIMain *pUIMain, TMainEvent Event)
 	}
 	else
 	{
-		// change banks of all TG's in same Group
+		// change banks and voices of all TG's in same Group
 		for (unsigned n = 0; n < CConfig::ToneGenerators; n++)
 		{
 			if (pUIMain->m_pMiniDexed->GetTGParameter(CMiniDexed::TGParameterTGGrouping, n) == nTGGroup)
 			{
-				if (bUpdateBank)
-				{
-					pUIMain->m_pMiniDexed->SetTGParameter(CMiniDexed::TGParameterVoiceBank, nVB, n);
-				}
-
+				pUIMain->m_pMiniDexed->SetTGParameter(CMiniDexed::TGParameterVoiceBank, nVB, n);
 				pUIMain->m_pMiniDexed->SetTGParameter(CMiniDexed::TGParameterProgram, nValue, n);
 			}
 		}
@@ -242,7 +238,7 @@ void CUIMain::ChangeVoice (CUIMain *pUIMain, TMainEvent Event)
 }
 
 
-// ChangeTG
+// Change TG
 void CUIMain::ChangeTG (CUIMain *pUIMain, TMainEvent Event)
 {
 	unsigned nValue = pUIMain->m_nCurrentTG;
@@ -271,7 +267,7 @@ void CUIMain::ChangeTG (CUIMain *pUIMain, TMainEvent Event)
 }
 
 
-// MuteUnmuteTG
+// Mute/Unmute TG
 void CUIMain::MuteUnmuteTG (CUIMain *pUIMain, TMainEvent Event)
 {
 	unsigned nTG = pUIMain->m_nSelectedTG;
@@ -282,7 +278,7 @@ void CUIMain::MuteUnmuteTG (CUIMain *pUIMain, TMainEvent Event)
 }
 
 
-// SelectTG
+// Selected TG
 void CUIMain::SelectTG (CUIMain *pUIMain, TMainEvent Event)
 {
 	unsigned nValue = pUIMain->m_nSelectedTG;
@@ -346,6 +342,7 @@ void CUIMain::LoadPerf (CUIMain *pUIMain, TMainEvent Event)
 	if (pUIMain->m_pMiniDexed->GetPerformanceSelectToLoad())
 	{
 		pUIMain->m_pMiniDexed->SetNewPerformance(pUIMain->m_nSelectedPerformanceID);
+		//LOGDBG ("New Performance loaded. PerformanceID: %d", pUIMain->m_nSelectedPerformanceID);  // DEBUG
 	}
 }
 
@@ -395,6 +392,9 @@ void CUIMain::ChangeMasterVol (CUIMain *pUIMain, TMainEvent Event)
 {
 	int nValue = (int)roundf(pUIMain->m_pMiniDexed->getMasterVolume() * 100);
 
+	//LOGDBG ("ChangeMasterVolume");	// DEBUG (this log never shows. WHY?)
+
+
 	switch (Event)
 	{
 	case MainEventPressAndStepDown:
@@ -417,22 +417,24 @@ void CUIMain::ChangeMasterVol (CUIMain *pUIMain, TMainEvent Event)
 		return;
 	}
 
-	//float32_t nMasterVol = nValue;
-	//pUIMain->m_pMiniDexed->setMasterVolume(nMasterVol / 100);
 	pUIMain->m_pMiniDexed->setMasterVolume((float32_t)nValue / 100);
 
 	pUIMain->ViewMasterVol(pUIMain);
 
-	// TODO: it this creating a new timer on every tick of the encoder???
-	//CTimer::Get()->StartKernelTimer(MSEC2HZ (1500), pUIMain->TimerHandler, 0, pUIMain);
+	//LOGDBG ("old m_TimerHandle: %d", pUIMain->m_TimerHandle);	// DEBUG (this log never shows. WHY?)
+
+	// we will create a new timer on every tick of the encoder
 	if (pUIMain->m_TimerHandle)
 	{
-		// before we start a new KernelTimer, we have to cancel the running one
+		// before we start a new KernelTimer, we have to cancel a running one
 		// or it will trigger unexpectedly and exit the MasterVolume-Screen.
 		// It seems there is no way to extend the time of the running KernelTimer.
-		CTimer::Get()->CancelKernelTimer(pUIMain->m_TimerHandle);		// TODO: what if timer already elapsed?
+		CTimer::Get()->CancelKernelTimer(pUIMain->m_TimerHandle);
+
+		//LOGDBG ("CancelKernelTimer");	// DEBUG (this log never shows. WHY?)
 	}
 	pUIMain->m_TimerHandle = CTimer::Get()->StartKernelTimer(MSEC2HZ (1500), pUIMain->TimerHandler, 0, pUIMain);
+	//LOGDBG ("new m_TimerHandle: %d", pUIMain->m_TimerHandle);	// DEBUG (this log never shows. WHY?)
 }
 
 
@@ -539,10 +541,6 @@ void CUIMain::ViewPerformance (CUIMain *pUIMain)
 // ViewTGGroupMute
 void CUIMain::ViewTGGroupMute (CUIMain *pUIMain)
 {
-	// TODO
-	//const char line1L[] = "TG:Grp+Mute";
-	//const char line2L[] = "to do...";
-	//const char lineXR[] = "";
 	const char empty[] = "";
 	string Groups = "Group ";
 	string TGs =	"TG    ";
@@ -559,7 +557,6 @@ void CUIMain::ViewTGGroupMute (CUIMain *pUIMain)
 	// \E[2;%dH	Cursor move to row 2 and column %d (starting at 1)
 	// \E[?25h	Normal cursor visible
 	// \E[?25l	Cursor invisible
-	
 	string escCursor="\E[?25h\E[2;"; // this is to locate cursor
 	escCursor += to_string(pUIMain->m_nSelectedTG + 7);
 	escCursor += "H";
@@ -622,183 +619,10 @@ void CUIMain::TimerHandler (TKernelTimerHandle hTimer, void *pParam, void *pCont
 	CUIMain *pThis = static_cast<CUIMain *> (pContext);
 	assert (pThis);
 
+	//LOGDBG ("KernelTimer elapsed");		// DEBUG (this log never shows. WHY?)
+
+	pThis->m_TimerHandle = 0;
+
 	pThis->EventHandler (MainEventUpdate);
 }
 
-
-/*
-void CUIMain::MainHandler (CUIMain *pUIMain, TMainEvent Event)
-{
-	switch (Event)
-	{
-	case MainEventUpdate:
-		break;
-
-	case MainEventSelect:				// push menu
-		assert (pUIMain->m_nCurrentMainDepth < MaxMainDepth);
-		pUIMain->m_MainStackParent[pUIMain->m_nCurrentMainDepth] = pUIMain->m_pParentMain;
-		pUIMain->m_MainStackMain[pUIMain->m_nCurrentMainDepth] = pUIMain->m_pCurrentMain;
-		pUIMain->m_nMainStackItem[pUIMain->m_nCurrentMainDepth]
-			= pUIMain->m_nCurrentMainItem;
-		pUIMain->m_nMainStackSelection[pUIMain->m_nCurrentMainDepth]
-			= pUIMain->m_nCurrentSelection;
-		pUIMain->m_nMainStackParameter[pUIMain->m_nCurrentMainDepth]
-			= pUIMain->m_nCurrentParameter;
-		pUIMain->m_nCurrentMainDepth++;
-
-		pUIMain->m_pParentMain = pUIMain->m_pCurrentMain;
-		pUIMain->m_nCurrentParameter =
-			pUIMain->m_pCurrentMain[pUIMain->m_nCurrentSelection].Parameter;
-		pUIMain->m_pCurrentMain =
-			pUIMain->m_pCurrentMain[pUIMain->m_nCurrentSelection].MainItem;
-		pUIMain->m_nCurrentMainItem = pUIMain->m_nCurrentSelection;
-		pUIMain->m_nCurrentSelection = 0;
-		break;
-
-	case MainEventStepDown:
-		if (pUIMain->m_nCurrentSelection > 0)
-		{
-			pUIMain->m_nCurrentSelection--;
-		}
-		break;
-
-	case MainEventStepUp:
-		++pUIMain->m_nCurrentSelection;
-		if (!pUIMain->m_pCurrentMain[pUIMain->m_nCurrentSelection].Name)  // more entries?
-		{
-			pUIMain->m_nCurrentSelection--;
-		}
-		break;
-
-	default:
-		return;
-	}
-
-	if (pUIMain->m_pCurrentMain)				// if this is another menu?
-	{
-		pUIMain->m_pUI->DisplayWrite (
-			pUIMain->m_pParentMain[pUIMain->m_nCurrentMainItem].Name,
-			"",
-			pUIMain->m_pCurrentMain[pUIMain->m_nCurrentSelection].Name,
-			pUIMain->m_nCurrentSelection > 0,
-			!!pUIMain->m_pCurrentMain[pUIMain->m_nCurrentSelection+1].Name);
-	}
-	else
-	{
-		pUIMain->EventHandler (MainEventUpdate);	// no, update parameter display
-	}
-}
-
-
-void CUIMain::EditVoiceParameter (CUIMain *pUIMain, TMainEvent Event)
-{
-	unsigned nTG = pUIMain->m_nMainStackParameter[pUIMain->m_nCurrentMainDepth-2];
-
-	unsigned nParam = pUIMain->m_nCurrentParameter;
-	const TParameter &rParam = s_VoiceParameter[nParam];
-
-	int nValue = pUIMain->m_pMiniDexed->GetVoiceParameter (nParam, CMiniDexed::NoOP, nTG);
-
-	switch (Event)
-	{
-	case MainEventUpdate:
-		break;
-
-	case MainEventStepDown:
-		nValue -= rParam.Increment;
-		if (nValue < rParam.Minimum)
-		{
-			nValue = rParam.Minimum;
-		}
-		pUIMain->m_pMiniDexed->SetVoiceParameter (nParam, nValue, CMiniDexed::NoOP, nTG);
-		break;
-
-	case MainEventStepUp:
-		nValue += rParam.Increment;
-		if (nValue > rParam.Maximum)
-		{
-			nValue = rParam.Maximum;
-		}
-		pUIMain->m_pMiniDexed->SetVoiceParameter (nParam, nValue, CMiniDexed::NoOP, nTG);
-		break;
-
-	case MainEventPressAndStepDown:
-	case MainEventPressAndStepUp:
-		pUIMain->TGShortcutHandler (Event);
-		return;
-
-	default:
-		return;
-	}
-
-	string TG ("TG");
-	TG += to_string (nTG+1);
-
-	string Value = GetVoiceValueString (nParam, nValue);
-
-	pUIMain->m_pUI->DisplayWrite (TG.c_str (),
-					  pUIMain->m_pParentMain[pUIMain->m_nCurrentMainItem].Name,
-					  Value.c_str (),
-					  nValue > rParam.Minimum, nValue < rParam.Maximum);
-}
-
-
-string CUIMain::GetTGValueString (unsigned nTGParameter, int nValue)
-{
-	string Result;
-
-	assert (nTGParameter < sizeof CUIMain::s_TGParameter / sizeof CUIMain::s_TGParameter[0]);
-
-	CUIMain::TToString *pToString = CUIMain::s_TGParameter[nTGParameter].ToString;
-	if (pToString)
-	{
-		Result = (*pToString) (nValue);
-	}
-	else
-	{
-		Result = to_string (nValue);
-	}
-
-	return Result;
-}
-
-string CUIMain::GetVoiceValueString (unsigned nVoiceParameter, int nValue)
-{
-	string Result;
-
-	assert (nVoiceParameter < sizeof CUIMain::s_VoiceParameter / sizeof CUIMain::s_VoiceParameter[0]);
-
-	CUIMain::TToString *pToString = CUIMain::s_VoiceParameter[nVoiceParameter].ToString;
-	if (pToString)
-	{
-		Result = (*pToString) (nValue);
-	}
-	else
-	{
-		Result = to_string (nValue);
-	}
-
-	return Result;
-}
-
-string CUIMain::ToVolume (int nValue)
-{
-	static const size_t MaxChars = CConfig::LCDColumns-2;
-	char VolumeBar[MaxChars+1];
-	memset (VolumeBar, 0xFF, sizeof VolumeBar);	// 0xFF is the block character
-	VolumeBar[nValue * MaxChars / 127] = '\0';
-
-	return VolumeBar;
-}
-
-
-void CUIMain::TimerHandlerNoBack (TKernelTimerHandle hTimer, void *pParam, void *pContext)
-{
-	CUIMain *pThis = static_cast<CUIMain *> (pContext);
-	assert (pThis);
-	
-	pThis->m_bSplashShow = false;
-	
-	pThis->EventHandler (MainEventUpdate);
-}
-*/

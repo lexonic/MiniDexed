@@ -19,6 +19,7 @@
 //
 #include "minidexed.h"
 #include <circle/logger.h>
+//#include <circle/string.h>  // test for MasterVolume LOG message
 #include <circle/memory.h>
 #include <circle/sound/pwmsoundbasedevice.h>
 #include <circle/sound/i2ssoundbasedevice.h>
@@ -147,10 +148,7 @@ CMiniDexed::CMiniDexed (CConfig *pConfig, CInterruptSystem *pInterrupt,
 	float32_t nConfigMasterVolume = pConfig->GetMasterVolume ();
 	setMasterVolume(nConfigMasterVolume/100);
 
-	// LOGNOTE: MasterVolume                       // DEBUG
-	std::string LogMasterVol = "MasterVolume (%): ";
-	LogMasterVol += std::to_string(nConfigMasterVolume);
-	LOGNOTE (LogMasterVol.c_str());
+	LOGNOTE ("MasterVolume: %d \%",(int)nConfigMasterVolume);
 
 
 	// BEGIN setup tg_mixer

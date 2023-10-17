@@ -42,8 +42,8 @@ public:
 		MainEventStepUp,
 		MainEventPressAndStepDown,
 		MainEventPressAndStepUp,
-		MainEventVolumeDown,		// use for dedicated Volume encoder
-		MainEventVolumeUp,			// use for dedicated Volume encoder
+		MainEventVolumeDown,		// future use for dedicated Volume encoder
+		MainEventVolumeUp,			// future use for dedicated Volume encoder
 		MainEventUnknown
 	};
 
@@ -108,7 +108,6 @@ private:
 	CMiniDexed *m_pMiniDexed;
 
 	unsigned m_nCurrentMainScreen;	// index of active item from s_MainScreens[]
-	//unsigned m_nCurrentMainItem;
 	unsigned m_nCurrentSelection;	 // index of active item from a TMainItem table
 	unsigned m_nCurrentTG;			// TG selected in BankVoice Screen
 	unsigned m_nSelectedTG;			// TG selected in Group/Mute Screen

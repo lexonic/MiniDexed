@@ -37,8 +37,6 @@ CUserInterface::CUserInterface (CMiniDexed *pMiniDexed, CGPIOManager *pGPIOManag
 	m_pUIButtons (0),
 	m_pRotaryEncoder (0),
 	m_bSwitchPressed (false),
-	//m_bMenuActive (true),   // classic mode: we start with Menu
-	m_bMenuActive (false),  // new mode: we start in MainScreen
 	m_Menu (this, pMiniDexed),
 	m_Main (this, pMiniDexed)
 {
@@ -171,8 +169,25 @@ bool CUserInterface::Initialize (void)
 		LOGDBG ("Rotary encoder initialized");
 	}
 
-	//m_Menu.EventHandler (CUIMenu::MenuEventUpdate);
-	m_Main.EventHandler (CUIMain::MainEventUpdate);
+	if (m_pConfig->GetDefaultScreen ())
+	{
+		// new mode: we start in MainScreen
+		m_bMenuActive = false;  
+		if (m_pConfig->GetDefaultScreen () == 2)
+		{
+			m_Main.EventHandler (CUIMain::MainEventNextScreen); // set Performance mode
+		}
+		else
+		{
+			m_Main.EventHandler (CUIMain::MainEventUpdate);
+		}
+	}
+	else
+	{
+		// classic mode: we start with Menu
+		m_bMenuActive = true;   
+		m_Menu.EventHandler (CUIMenu::MenuEventUpdate);
+	}
 
 	return true;
 }
