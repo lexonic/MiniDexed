@@ -166,6 +166,7 @@ public:
 	unsigned GetPerformanceSelectChannel (void) const;
 
 	unsigned GetMasterVolume (void) const;
+	unsigned GetUIMainEnabled (void) const;
 	unsigned GetDefaultScreen (void) const;
 
 private:
@@ -252,6 +253,7 @@ private:
 	unsigned m_bPerformanceSelectChannel;
 
 	unsigned m_nMasterVolume;
+	unsigned m_nUIMainEnabled;
 	unsigned m_nDefaultScreen;
 };
 

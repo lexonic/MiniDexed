@@ -169,7 +169,7 @@ bool CUserInterface::Initialize (void)
 		LOGDBG ("Rotary encoder initialized");
 	}
 
-	if (m_pConfig->GetDefaultScreen ())
+	if ((m_pConfig->GetUIMainEnabled ()) && (m_pConfig->GetDefaultScreen ()))
 	{
 		// new mode: we start in MainScreen
 		m_bMenuActive = false;  
@@ -408,8 +408,15 @@ void CUserInterface::UIButtonsEventHandler (CUIButton::BtnEvent Event)
 			break;
 
 		case CUIButton::BtnEventHome:
-			m_bMenuActive = false;
-			m_Main.EventHandler (CUIMain::MainEventUpdate);     // enter main menu where we have left
+			if (m_pConfig->GetUIMainEnabled ())
+			{
+				m_bMenuActive = false;
+				m_Main.EventHandler (CUIMain::MainEventUpdate);     // enter main menu where we have left
+			}
+			else
+			{
+				m_Menu.EventHandler (CUIMenu::MenuEventHome);
+			}
 			break;
 
 		case CUIButton::BtnEventPgmUp:

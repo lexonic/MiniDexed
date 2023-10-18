@@ -35,8 +35,7 @@ LOGMODULE ("uimenu");
 
 const CUIMenu::TMenuItem CUIMenu::s_MenuRoot[] =
 {
-	//{"MiniDexed", MenuHandler, s_MainMenu},
-	{"MiniDexed MENU", MenuHandler, s_MainMenu},   // DEBUG
+	{"MiniDexed", MenuHandler, s_MainMenu},
 	{0}
 };
 
@@ -63,8 +62,8 @@ const CUIMenu::TMenuItem CUIMenu::s_MainMenu[] =
 // TG menu-items
 const CUIMenu::TMenuItem CUIMenu::s_TGMenu[] =
 {
-	{"Voice",	EditProgramNumber},			// *MenuItem is initialized to 0
-	{"Bank",	EditVoiceBankNumber},		// *MenuItem is initialized to 0
+	{"Voice",	EditProgramNumber},
+	{"Bank",	EditVoiceBankNumber},
 	{"Volume",	EditTGParameter,	0,	CMiniDexed::TGParameterVolume},
 #ifdef ARM_ALLOW_MULTI_CORE
 	{"Pan",		EditTGParameter,	0,	CMiniDexed::TGParameterPan},
