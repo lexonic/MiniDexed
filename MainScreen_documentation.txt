@@ -26,7 +26,7 @@ The default screen presented after startup can be configured in minidexed.ini (t
 
 Screens:
                         +------------+
-						|            |      | short       | encoder     | click+turn           |
+                        |            |      | short       | encoder     | click+turn           |
                         V            |      +-------------+-------------+----------------------+
 Bank+Voice      +----------------+   |      |             |             |                      |
                 |001[BankNameXY]8|   |      | SelectTG    | ChangeTG    | { MasterVolume       |
@@ -117,8 +117,8 @@ Un-grouped TG's (default) shows as ".".
 Muted TG's show as "-" instead of the TG-number.
 
 behaviour of grouping for TG's in the same group:
-    * changing a bank will be reflected on all TG's with same group ID
-    * changing a voice will change to the same Voice and Bank on all TG's with same group ID.
+* changing a bank will be reflected on all TG's with same group ID
+* changing a voice will change to the same Voice and Bank on all TG's with same group ID.
 
 
 
