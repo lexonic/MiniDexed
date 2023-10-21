@@ -98,9 +98,9 @@ Select performance with encoder and load it with encoder-click.
 TG Grouping and Mute
 --------------------
 
-Grouping TG's link TG's together. Grouped TGs sync changes of Voices and Banks in Bank+Voice Screen. Changes in the classic menu are not syncronized!
+Grouping links TG's together. Grouped TG's syncronize changes of Voices and Banks in the Bank+Voice screen. Changes in the classic menu are not syncronized yet!
 
-Select the TG by turning the encoder. A click toggles mute/unmute. Click+turn changes the group.
+Select the TG by turning the encoder. A click toggles mute/unmute. Click+turn changes the groupID.
 
 Load/save group settings in performance files for each TG:
 	TGGrouping#=0..4   -> 0 = ungrouped; 1..4 = A..D
@@ -135,7 +135,7 @@ MasterVolume is adjusted by encoder click+turn.
 MasterVolume-screen is not shown or updated by changing MasterVolume by MIDI.
 
 Load global MasterVolume from minidexed.ini (range: 0..100):
-    MasterVolume=100
+	MasterVolume=100
 
 
 
