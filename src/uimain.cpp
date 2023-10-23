@@ -523,7 +523,10 @@ void CUIMain::ViewPerformance (CUIMain *pUIMain)
 
 	string ValuePadded = "PERF ";
 	// padding PerformanceValue with "0"s to 4 char
-	ValuePadded += pUIMain->PadString(to_string(nValue).c_str(), 4, '0', true);
+	// orig:
+	//ValuePadded += pUIMain->PadString(to_string(nValue).c_str(), 4, '0', true);
+	// quick-fix: PerfNum+1: let performances start with number 1 on display
+	ValuePadded += pUIMain->PadString(to_string(nValue+1).c_str(), 4, '0', true);
 
 	string Name = pUIMain->m_pMiniDexed->GetPerformanceName(nValue);
 
@@ -561,7 +564,12 @@ void CUIMain::ViewTGGroupMute (CUIMain *pUIMain)
 	escCursor += to_string(pUIMain->m_nSelectedTG + 7);
 	escCursor += "H";
 
-	pUIMain->m_pUI->DisplayWriteMain(Groups.c_str(), empty, TGs.c_str(), escCursor.c_str());
+	// orig:
+	//pUIMain->m_pUI->DisplayWriteMain(Groups.c_str(), empty, TGs.c_str(), escCursor.c_str());
+	// quick-fix: show selected TG in upper-right corner, since cursor does not work for SSD1306 displays 
+	string TG = to_string(pUIMain->m_nSelectedTG+1);
+	pUIMain->m_pUI->DisplayWriteMain(Groups.c_str(), TG.c_str(), TGs.c_str(), escCursor.c_str());
+
 }
 
 
